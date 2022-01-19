@@ -26,8 +26,8 @@ In the `PSET_SEQUENCER` sub-menu you'll find the following parameters to control
 * `first` and `last`: the first and last psets to be used by the pset sequencer may be set with these two parameters
 * `<<reset first/last range>>`: resets the first and last parameters (this is used to refresh the parameters if a new pset has been added to the script)
 
-TODO
-enable `pset exclusion sets` to allow parameters to be excluded from the pset sequencer so adjustments to them while the pset sequencer is running aren't undone when a new pset is loaded. 
+TODO<br>
+* enable `pset exclusion sets`: this will allow parameters to be excluded from the pset sequencer so they may be adjusted while the pset sequencer is running. 
 
 ### Download
 
