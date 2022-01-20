@@ -126,7 +126,7 @@ function m.pset_seq.set_pset_seq_timer()
     end  
     if clock.get_tempo() ~= arg_time and m.pset_seq.initializing_pset_seq_timer == false then
       m.pset_seq.initializing_pset_seq_timer = true
-      metro.free(m.pset_seq_timer.props.id)
+      metro.free(m.pset_seq.pset_seq_timer.props.id)
       m.pset_seq.set_pset_seq_timer()
       m.pset_seq.initializing_pset_seq_timer = false
     end
