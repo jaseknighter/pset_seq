@@ -94,14 +94,13 @@ function m.pset_seq.set_pset_seq_timer()
   -- local current_pset = first.min
   m.pset_seq.pset_seq_timer = metro.init(function() 
     if params:get("pset_seq_enabled") == 2 then
-      local first = params:lookup_param("pset_exclusion_first")
-      local last = params:lookup_param("pset_exclusion_last")
+      local first = params:lookup_param("pset_first")
+      local last = params:lookup_param("pset_last")
       local new_pset_id
-      -- print("yo", params:lookup_param("pset_exclusion_first").min, params:lookup_param("pset_exclusion_last").max)
         m.pset_seq.pset_seq_ticks = m.pset_seq.pset_seq_ticks + 1
       if m.pset_seq.pset_seq_ticks == m.pset_seq.ticks_per_seq_cycle then
         m.pset_seq.pset_seq_ticks = 1
-        m.pset_seq.num_psets = last.value - first.value + 1
+        -- m.pset_seq.num_psets = last.value - first.value + 1
         local current_pset = params:get("load_pset")
         local mode = params:get("pset_seq_mode")
         if mode == 1 then
@@ -151,7 +150,7 @@ function m.pset_seq.set_num_psets()
         m.pset_seq.num_psets = m.pset_seq.num_psets + 1
       end
     end
-     m.pset_seq.pset_dir_len = #dir
+    m.pset_seq.pset_dir_len = #dir
   end
 end
 
@@ -188,13 +187,13 @@ m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
       m.pset_seq.initializing_pset_seq_timer = true
       metro.free(m.pset_seq.pset_seq_timer.props.id)
       m.pset_seq.set_pset_seq_timer()
-      m.pset_seq.set_pset_exclusion_last()
-      m.pset_seq.set_pset_exclusion_first()
+      m.pset_seq.set_pset_last()
+      m.pset_seq.set_pset_first()
       m.pset_seq.initializing_pset_seq_timer = false
     end
   end )
 
-    params:add_option("pset_seq_mode","pset seq mode", {"loop", "up/down", "random"})
+  params:add_option("pset_seq_mode","pset seq mode", {"loop", "up/down", "random"})
   params:add_number("load_pset", "load pset", 1, m.pset_seq.get_num_psets(),1,nil, false, false)
 
   params:set_action("load_pset", function(x) 
@@ -221,59 +220,58 @@ m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
   params:set_action("pset_seq_beats_per_bar", function() m.pset_seq.set_ticks_per_seq_cycle() end )
 
   
-  function m.pset_seq.set_pset_exclusion_first(val)
+  function m.pset_seq.set_pset_first(val)
     m.pset_seq.set_num_psets()    
-    local first = params:lookup_param("pset_exclusion_first")
+    local first = params:lookup_param("pset_first")
     first.max = m.pset_seq.get_num_psets()
 
     if first.value == 0 then
-      params:set("pset_exclusion_first",1) 
+      params:set("pset_first",1) 
     elseif first.value > first.max then 
-      params:set("pset_exclusion_first",first.max) 
+      params:set("pset_first",first.max) 
     end
 
     if val then
-      local clamped_val = util.clamp(val,1,params:get("pset_exclusion_last"))
+      local clamped_val = util.clamp(val,1,params:get("pset_last"))
       if val > clamped_val then 
-        params:set("pset_exclusion_first",clamped_val) 
+        params:set("pset_first",clamped_val) 
       end
     end
   end
     
-  function m.pset_seq.set_pset_exclusion_last(val)
+  function m.pset_seq.set_pset_last(val)
     m.pset_seq.set_num_psets()    
-    local last = params:lookup_param("pset_exclusion_last")
+    local last = params:lookup_param("pset_last")
     last.max = m.pset_seq.get_num_psets()
-  
+    
     if last.value == 0 or last.value > last.max then
-      params:set("pset_exclusion_last",last.max) 
+      params:set("pset_last",last.max) 
     end
-  
     if val then
-      local clamped_val = util.clamp(val,params:get("pset_exclusion_first"), last.max)
+      local clamped_val = util.clamp(val,params:get("pset_first"), last.max)
       if val < clamped_val then 
-        params:set("pset_exclusion_last", clamped_val) 
+        params:set("pset_last", clamped_val) 
       end
     end
   end
 
-  params:add_number("pset_exclusion_first", "first", 1, m.pset_seq.get_num_psets(), 1)
-  params:set_action("pset_exclusion_first", function(val) 
-    m.pset_seq.set_pset_exclusion_first(val)
-    m.pset_seq.set_pset_exclusion_last()
+  params:add_number("pset_first", "first", 1, m.pset_seq.get_num_psets(), 1)
+  params:set_action("pset_first", function(val) 
+    m.pset_seq.set_pset_first(val)
+    m.pset_seq.set_pset_last()
   end )
   
 
-  params:add_number("pset_exclusion_last", "last", 1, m.pset_seq.get_num_psets(), m.pset_seq.get_num_psets())
-  params:set_action("pset_exclusion_last", function(val) 
-    m.pset_seq.set_pset_exclusion_last(val)
-    m.pset_seq.set_pset_exclusion_first()
+  params:add_number("pset_last", "last", 1, m.pset_seq.get_num_psets(), m.pset_seq.get_num_psets())
+  params:set_action("pset_last", function(val) 
+    m.pset_seq.set_pset_last(val)
+    m.pset_seq.set_pset_first()
   end )
   
   params:add_trigger("reset_first_lst_ranges","<<reset first/last ranges>>")
   params:set_action("reset_first_lst_ranges", function() 
-    m.pset_seq.set_pset_exclusion_last(val)
-    m.pset_seq.set_pset_exclusion_first()
+    m.pset_seq.set_pset_last(val)
+    m.pset_seq.set_pset_first()
   end )
 
   -- set default exclusions 
@@ -281,7 +279,7 @@ m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
   if m.pset_seq.pset_path == "/flora" then
     m.pset_seq.default_exclusions = {"pset_seq_enabled","pset_seq_mode","load_pset", "pset_seq_beats","pset_seq_beats_per_bar","plow1_max_level","plow1_max_time","plow2_max_level","plow2_max_time"}
   else
-    m.pset_seq.default_exclusions = {"pset_seq_enabled","pset_seq_mode","load_pset", "pset_seq_beats","pset_seq_beats_per_bar", "pset_exclusion_first", "pset_exclusion_last"}
+    m.pset_seq.default_exclusions = {"pset_seq_enabled","pset_seq_mode","load_pset", "pset_seq_beats","pset_seq_beats_per_bar", "pset_first", "pset_last"}
   end
   m.pset_seq.set_save_paramlist(m.pset_seq.default_exclusions, false)
 
@@ -347,7 +345,6 @@ m.redraw=function()
 end
 
 m.init=function()
-  print("menu init")
 
 end -- on menu entry, ie, if you wanted to start timers
 
