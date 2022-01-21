@@ -15,6 +15,8 @@ after installation you can activate the sequencer by going to `PARAMETERS > EDIT
 
 In the `PSET_SEQUENCER` sub-menu you'll find the following parameters to control the sequencer:
 
+* `mod midi port`: sets the midi port (set in SYSTEMS>DEVICES>MIDI) of the device that can be used to send program changes to load a new pset
+* `mod midi in`: sets the name device assigned to the selected `mod midi port` that can be used to send program changes to load a new pset
 * `pset seq enabled`: turns the sequencer on and off
 * `pset seq mode`: there are four modes:
   * `loop`: loads the psets in order returning to the first pset after the last one has loaded
@@ -28,6 +30,7 @@ In the `PSET_SEQUENCER` sub-menu you'll find the following parameters to control
 
 TODO<br>
 * enable `pset exclusion sets`: this will allow parameters to be excluded from the pset sequencer so they may be adjusted while the pset sequencer is running. 
+* replace metro with lattice
 
 ### Download
 

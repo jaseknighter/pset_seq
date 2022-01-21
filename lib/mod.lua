@@ -47,7 +47,6 @@ end)
 
 mod.hook.register("script_pre_init","broadcast mod init",function()
   m.pset_seq.init()
-  print("init pset sequencer")
 end)
 
 --
@@ -173,13 +172,59 @@ end
 -- pset sequencer init
 ------------------------------
 m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
-  
+  m.pset_seq.inited = false 
   m.pset_seq.pset_path = _path.data .. norns.state.name .. "/"
-
+  
   -- setup pset sequence parameters
   m.pset_seq.set_num_psets()
+  
   local num_pset_exclusion_sets = pset_exclusion_table_labels and #pset_exclusion_table_labels+1 or 0
-  params:add_group("PSET SEQUENCER",8+num_pset_exclusion_sets)
+  
+  params:add_group("PSET SEQUENCER",10+num_pset_exclusion_sets)
+  
+  function m.pset_seq.update_mod_midi()
+    -- setup midi
+    m.pset_seq.midi_devices={}
+    m.pset_seq.midi_device_list={"none"}
+    for _,dev in pairs(midi.devices) do
+      local mod_midi_port = m.pset_seq.inited == false and 1 or params:get("mod_midi_port") 
+      
+      table.insert(m.pset_seq.midi_device_list,dev.name)
+      m.pset_seq.midi_devices[dev.name]=midi.connect(mod_midi_port)
+      m.pset_seq.midi_devices[dev.name].event=function(data)
+        if dev.name~=m.pset_seq.midi_device_list[params:get("mod_midi_in")] then
+          do return end
+        end
+        local msg=midi.to_msg(data)
+
+        if msg.type == "program_change" then
+          local new_pset = msg.val
+          local first = params:get("pset_first")
+          local last = params:get("pset_last")
+          if new_pset >= first and new_pset <= last then
+            params:set("load_pset",new_pset)
+          else
+            print("ERROR: program change value < first param or > last param")
+          end
+        end
+      end
+    end
+  end
+
+  m.pset_seq.update_mod_midi() 
+
+  params:add_number("mod_midi_port","mod midi port",1,16,1)
+  params:set_action("mod_midi_port", function()
+    m.pset_seq.update_mod_midi() 
+  end)
+  
+  params:add_option("mod_midi_in","mod midi in",m.pset_seq.midi_device_list,1)
+  params:set_action("mod_midi_in", function()
+    m.pset_seq.update_mod_midi() 
+  end)
+  
+  
+
 
   params:add_option("pset_seq_enabled","pset seq enabled", {"false", "true"})
   params:set_action("pset_seq_enabled", function(x) 
@@ -219,7 +264,6 @@ m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
   params:add_number("pset_seq_beats_per_bar", "pset seq beats per bar", 1, 4, 1)
   params:set_action("pset_seq_beats_per_bar", function() m.pset_seq.set_ticks_per_seq_cycle() end )
 
-  
   function m.pset_seq.set_pset_first(val)
     m.pset_seq.set_num_psets()    
     local first = params:lookup_param("pset_first")
@@ -274,6 +318,8 @@ m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
     m.pset_seq.set_pset_first()
   end )
 
+  
+  
   -- set default exclusions 
   -- INCLUDES HACK FOR FLORA to exclude plow screen params max level & max time by default until envelope PSET bug is fixed
   if m.pset_seq.pset_path == "/flora" then
@@ -291,7 +337,9 @@ m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
   
   -- end pset sequence timer
   m.pset_seq.set_pset_seq_timer()
+  m.pset_seq.inited = true
 end
+
 
 -------------------------------
 -- mod integration
@@ -345,7 +393,7 @@ m.redraw=function()
 end
 
 m.init=function()
-
+  
 end -- on menu entry, ie, if you wanted to start timers
 
 m.deinit=function() end -- on menu exit
