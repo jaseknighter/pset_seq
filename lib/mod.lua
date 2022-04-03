@@ -172,6 +172,7 @@ end
 -- pset sequencer init
 ------------------------------
 m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
+  print("pset seq init")
   m.pset_seq.inited = false 
   m.pset_seq.pset_path = _path.data .. norns.state.name .. "/"
   
@@ -223,9 +224,6 @@ m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
     m.pset_seq.update_mod_midi() 
   end)
   
-  
-
-
   params:add_option("pset_seq_enabled","pset seq enabled", {"false", "true"})
   params:set_action("pset_seq_enabled", function(x) 
     if x == 2 then
@@ -323,9 +321,10 @@ m.pset_seq.init = function (pset_exclusion_tables, pset_exclusion_table_labels)
   -- set default exclusions 
   -- INCLUDES HACK FOR FLORA to exclude plow screen params max level & max time by default until envelope PSET bug is fixed
   if m.pset_seq.pset_path == "/flora" then
-    m.pset_seq.default_exclusions = {"pset_seq_enabled","pset_seq_mode","load_pset", "pset_seq_beats","pset_seq_beats_per_bar","plow1_max_level","plow1_max_time","plow2_max_level","plow2_max_time"}
+    m.pset_seq.default_exclusions = {"mod_midi_port","mod_midi_in","pset_seq_enabled","pset_seq_mode","load_pset", "pset_seq_beats","pset_seq_beats_per_bar","plow1_max_level","plow1_max_time","plow2_max_level","plow2_max_time"}
   else
-    m.pset_seq.default_exclusions = {"pset_seq_enabled","pset_seq_mode","load_pset", "pset_seq_beats","pset_seq_beats_per_bar", "pset_first", "pset_last"}
+    -- m.pset_seq.default_exclusions = {"pset_seq_enabled","pset_seq_mode","load_pset", "pset_seq_beats","pset_seq_beats_per_bar", "pset_first", "pset_last"}
+    m.pset_seq.default_exclusions = {"mod_midi_port","mod_midi_in","pset_seq_enabled","pset_seq_mode","load_pset", "pset_seq_beats","pset_seq_beats_per_bar", "pset_first", "pset_last"}
   end
   m.pset_seq.set_save_paramlist(m.pset_seq.default_exclusions, false)
 
@@ -363,7 +362,7 @@ m.enc=function(n,d)
   elseif d<0 then 
     d=-1 
   end
-  state.x=util.clamp(state.x+d,1,4)
+  -- state.x=util.clamp(state.x+d,1,4)
   mod.menu.redraw()
 end
 
