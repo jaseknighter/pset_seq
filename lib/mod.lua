@@ -92,11 +92,12 @@ function m.pset_seq.set_pset_seq_timer()
   m.pset_seq.pset_seq_ticks = 1
   -- local current_pset = first.min
   m.pset_seq.pset_seq_timer = metro.init(function() 
+    m.pset_seq.ticks_per_seq_cycle = math.floor(clock.get_tempo() * (params:get("pset_seq_beats")/params:get("pset_seq_beats_per_bar")))
     if params:get("pset_seq_enabled") == 2 then
       local first = params:lookup_param("pset_first")
       local last = params:lookup_param("pset_last")
       local new_pset_id
-        m.pset_seq.pset_seq_ticks = m.pset_seq.pset_seq_ticks + 1
+      m.pset_seq.pset_seq_ticks = m.pset_seq.pset_seq_ticks + 1
       if m.pset_seq.pset_seq_ticks == m.pset_seq.ticks_per_seq_cycle then
         m.pset_seq.pset_seq_ticks = 1
         -- m.pset_seq.num_psets = last.value - first.value + 1
@@ -118,7 +119,9 @@ function m.pset_seq.set_pset_seq_timer()
           new_pset_id = math.random(1,m.pset_seq.num_psets) + first.value - 1
         end
         
-        local old_mode = mode
+        print(m.pset_seq.pset_seq_ticks, m.pset_seq.ticks_per_seq_cycle)
+        -- print("load pset at speed: ", m.pset_seq.ticks_per_seq_cycle)
+        -- print(">>>>>>>>>>>>")
         params:set("load_pset", new_pset_id)
       end
     end  
@@ -134,7 +137,7 @@ function m.pset_seq.set_pset_seq_timer()
 end
 
 function m.pset_seq.set_ticks_per_seq_cycle()
-  m.pset_seq.ticks_per_seq_cycle = math.floor(clock.get_tempo() * (params:get("pset_seq_beats")/params:get("pset_seq_beats_per_bar")))
+  -- m.pset_seq.ticks_per_seq_cycle = math.floor(clock.get_tempo() * (params:get("pset_seq_beats")/params:get("pset_seq_beats_per_bar")))
   m.pset_seq.pset_seq_ticks = 1
 end 
 
